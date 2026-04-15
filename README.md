@@ -56,7 +56,7 @@ Results and plots will be saved to `./results/`.
 A pre-trained GPT-2 model is fine-tuned on a dataset of jokes to generate new jokes given a short text prompt.
 
 ### Dataset
-A CSV file containing a `Joke` column. The file path is set via `pd.read_csv("data")` — update this to match your local CSV path.
+A CSV file containing a `Joke` column. The file path is set via `pd.read_csv("data")`.
 
 ### Training
 - Model: `gpt2` (from Hugging Face)
