@@ -3,7 +3,7 @@ import random
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -217,8 +217,11 @@ def evaluate(model, test_loader, device):
     all_preds_array = np.array(all_preds)
     all_labels_array = np.array(all_labels)
     test_accuracy = float((all_preds_array == all_labels_array).mean())
+    precision = precision_score(all_labels_array, all_preds_array, average="weighted", zero_division=0)
+    recall = recall_score(all_labels_array, all_preds_array, average="weighted", zero_division=0)
+    f1 = f1_score(all_labels_array, all_preds_array, average="weighted", zero_division=0)
     cm = confusion_matrix(all_labels_array, all_preds_array)
-    return test_accuracy, cm
+    return test_accuracy, precision, recall, f1, cm
 
 
 def save_loss_plot(train_losses, val_losses, model_name: str, output_dir: Path):
@@ -262,17 +265,23 @@ def run_experiment(model_name: str, model, train_transform, val_test_transform, 
 
     model = model.to(device)
     train_losses, val_losses = train_and_validate(model, train_loader, val_loader, device)
-    test_accuracy, cm = evaluate(model, test_loader, device)
+    test_accuracy, precision, recall, f1, cm = evaluate(model, test_loader, device)
 
     save_loss_plot(train_losses, val_losses, model_name, output_dir)
     save_confusion_matrix(cm, model_name, output_dir)
 
     print(f"Test Accuracy ({model_name}): {test_accuracy:.4f}")
+    print(f"Precision ({model_name}): {precision:.4f}")
+    print(f"Recall ({model_name}): {recall:.4f}")
+    print(f"F1-Score ({model_name}): {f1:.4f}")
     print(f"Confusion Matrix ({model_name}):\n{cm}")
 
     return {
         "name": model_name,
         "test_accuracy": test_accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
         "train_losses": train_losses,
         "val_losses": val_losses,
     }
@@ -286,6 +295,9 @@ def print_comparison_summary(results):
         print(
             f"{result['name']}: "
             f"accuracy={result['test_accuracy']:.4f}, "
+            f"precision={result['precision']:.4f}, "
+            f"recall={result['recall']:.4f}, "
+            f"f1={result['f1']:.4f}, "
             f"delta_vs_baseline={improvement:+.4f}"
         )
 
