@@ -66,12 +66,37 @@ def generate_joke(prompt):
     output = model.generate(
         input_ids=encoded_prompt["input_ids"],
         attention_mask=encoded_prompt["attention_mask"],
-        max_length=50,
+        max_new_tokens=60,
         do_sample=True,
         top_k=50,
+        top_p=0.95,
+        temperature=0.9,
         pad_token_id=tokenizer.eos_token_id,
     )
-    
+
     return tokenizer.decode(output[0], skip_special_tokens=True)
 
-print(generate_joke("What did the"))
+
+# Evaluation set 1: first three words taken from actual jokes in the dataset
+dataset_prompts = [
+    " ".join(jokes[i].split()[:3]) for i in [0, 2, 3, 7, 8]
+]
+
+print("\n=== EVALUATION SET 1: Dataset-based prompts ===")
+for prompt in dataset_prompts:
+    print(f"\nPrompt : {prompt!r}")
+    print(f"Output : {generate_joke(prompt)}")
+
+# Evaluation set 2: three randomly chosen words not from the dataset
+random_prompts = [
+    "Never trust a",
+    "Scientists recently discovered",
+    "My dog always",
+    "The president decided",
+    "Once upon a",
+]
+
+print("\n=== EVALUATION SET 2: Random prompts (not from dataset) ===")
+for prompt in random_prompts:
+    print(f"\nPrompt : {prompt!r}")
+    print(f"Output : {generate_joke(prompt)}")
